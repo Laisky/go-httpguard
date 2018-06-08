@@ -1,4 +1,4 @@
-package: pateo.com/go-httpguard
+package: github.com/Laisky/go-httpguard
 import:
 - package: github.com/Laisky/go-utils
   version: ~0.0.2

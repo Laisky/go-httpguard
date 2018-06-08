@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
+	httpguard "github.com/Laisky/go-httpguard"
 	"github.com/Laisky/go-utils"
 	"github.com/spf13/pflag"
-	httpguard "pateo.com/go-httpguard"
 )
 
 func setupSettings() {
