@@ -1,0 +1,22 @@
+version: "2"
+services:
+
+  go-httpguard:
+    image: ppcelery/go-httpguard:pateo
+    restart: "on-failure"
+    networks:
+      - go-httpguard
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 10m
+    environment:
+      - TASKS=heartbeat,es-monitor,fl-monitor,es-rollover
+    volumes:
+      - /opt/configs/go-httpguard:/etc/go-httpguard
+    ports:
+      - 24215:24215
+
+networks:
+  go-httpguard:
+    driver: bridge

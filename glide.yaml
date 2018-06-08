@@ -1,0 +1,8 @@
+package: pateo.com/go-httpguard
+import:
+- package: github.com/Laisky/go-utils
+  version: ~0.0.2
+- package: github.com/spf13/pflag
+  version: ~1.0.1
+- package: github.com/valyala/fasthttp
+  version: ~20180529.0.0
