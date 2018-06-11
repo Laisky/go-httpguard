@@ -5,17 +5,21 @@ import (
 	utils "github.com/Laisky/go-utils"
 )
 
-var (
-	Audit = AuditType{}
-)
+type Audit struct{}
 
-type AuditType struct{}
+func NewAudit() *Audit {
+	return &Audit{}
+}
 
-func (a *AuditType) Entrypoint(c *chaining.Chain) (interface{}, error) {
+func (a *Audit) Entrypoint(c *chaining.Chain) (interface{}, error) {
 	ctx := c.GetVal().(*CtxMeta)
+	if utils.Settings.GetBool("dry") {
+		return ctx, nil
+	}
+
 	go a.PushAuditRecord(map[string]interface{}{
-		"username":   ctx.Meta[Auth.TKUsername],
-		"expires_at": ctx.Meta[Auth.TKExpiresAt],
+		"username":   ctx.Meta[Username],
+		"expires_at": ctx.Meta[ExpiresAt],
 		"path":       string(ctx.Ctx.Path()),
 		"method":     string(ctx.Ctx.Method()),
 		"body":       string(ctx.Ctx.PostBody()),
@@ -25,7 +29,7 @@ func (a *AuditType) Entrypoint(c *chaining.Chain) (interface{}, error) {
 	return ctx, nil
 }
 
-func (a *AuditType) PushAuditRecord(data map[string]interface{}) {
+func (a *Audit) PushAuditRecord(data map[string]interface{}) {
 	utils.Logger.Infof("user %v %v %v", data["username"], data["method"], data["path"])
 	reqData := &utils.RequestData{
 		Data: data,

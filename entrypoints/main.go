@@ -35,8 +35,12 @@ func main() {
 	setupCommandArgs()
 	setupSettings()
 
-	httpguard.Controllor.Setup()
-	err := httpguard.Controllor.Run()
+	controller := httpguard.NewController(
+		httpguard.NewAuth(utils.Settings.GetString("secret")),
+		httpguard.NewAudit(),
+		httpguard.NewBackend(),
+	)
+	err := controller.Run()
 	if err != nil {
 		panic(err)
 	}
