@@ -36,6 +36,15 @@ users:
         - "/"
 ```
 
+token:
+
+```js
+{
+  "username": "laisky",
+  "expires_at": "2118-01-01"
+}
+```
+
 Each request should has the Cookie named `token`:
 
 ![demo](https://s3.laisky.com/uploads/2018/06/jwt-demo.jpg)
