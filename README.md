@@ -21,6 +21,7 @@ backend: "http://xxx"
 secret: "123456"
 users:
   - username: "readonly"
+    password: "readonly"
     permissions:
       get:
         - "/"
