@@ -1,6 +1,8 @@
 package httpguard
 
 import (
+	"bytes"
+	"encoding/base64"
 	"fmt"
 	"strings"
 
@@ -23,13 +25,16 @@ func NewAuth(secret string) *Auth {
 
 func (a *Auth) Entrypoint(c *chaining.Chain) (interface{}, error) {
 	ctx := c.GetVal().(*CtxMeta)
-	payload, err := a.validateToken(string(ctx.Ctx.Request.Header.Cookie("token")))
+
+	uinfo, err := a.loadUserInfo(ctx)
 	if err != nil {
 		ctx.Ctx.Response.SetStatusCode(fasthttp.StatusForbidden)
-		return nil, errors.Wrap(err, "token is illegal")
+		return nil, err
 	}
-	username := payload[a.TKUsername].(string)
-	perms, err := a.loadPermissionsByName(username)
+
+	username := uinfo.username
+	expires := uinfo.expires
+	perms, err := a.loadPermissionsByName(username.(string))
 	if err != nil {
 		ctx.Ctx.Response.SetStatusCode(fasthttp.StatusForbidden)
 		return nil, errors.Wrap(err, "token is illegal")
@@ -42,8 +47,72 @@ func (a *Auth) Entrypoint(c *chaining.Chain) (interface{}, error) {
 	}
 
 	ctx.Meta[Username] = username
-	ctx.Meta[ExpiresAt] = payload[a.TKExpiresAt]
+	ctx.Meta[ExpiresAt] = expires
 	return ctx, nil
+}
+
+type userInfo struct {
+	username, expires interface{}
+}
+
+var basicAuthPrefix = []byte("Basic ")
+
+func (a *Auth) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err error) {
+	token := ctx.Ctx.Request.Header.Cookie("token")
+	if len(token) > 0 { // auth by jwt
+		utils.Logger.Debug("validate by jwt...")
+		payload, err := a.validateToken(string(token))
+		if err != nil {
+			return nil, errors.Wrap(err, "token is illegal")
+		}
+
+		return &userInfo{
+			username: payload[a.TKUsername],
+			expires:  payload[a.TKExpiresAt],
+		}, nil
+	}
+
+	// auth by basicaith
+	auth := ctx.Ctx.Request.Header.Peek("Authorization")
+	utils.Logger.Debugf("got authorization auth: %v", string(auth))
+	if len(auth) > 0 {
+		utils.Logger.Debug("validate by basic auth...")
+		payload, err := base64.StdEncoding.DecodeString(string(auth[len(basicAuthPrefix):]))
+		if err != nil {
+			return nil, errors.Wrap(err, "decode auth got error")
+		}
+
+		pair := bytes.SplitN(payload, []byte(":"), 2)
+		if len(pair) == 2 {
+			username := string(pair[0])
+			if pw, ok := a.loadPasswdByName(username); ok {
+				if string(pair[1]) == pw {
+					return &userInfo{
+						username: username,
+					}, nil
+				}
+			}
+		}
+		return nil, fmt.Errorf("auth length expect 2, but got %v", len(pair))
+	}
+
+	return nil, errors.New("auth failed")
+}
+
+func (a *Auth) loadPasswdByName(username string) (passwd string, ok bool) {
+	utils.Logger.Debugf("loadPasswdByName for %v", username)
+	var umi map[interface{}]interface{}
+	for _, ui := range utils.Settings.Get("users").([]interface{}) {
+		umi = ui.(map[interface{}]interface{})
+		if umi["username"].(string) == username {
+			if pw, ok := umi["password"]; ok {
+				return pw.(string), true
+			}
+		}
+	}
+
+	utils.Logger.Debugf("can not load password for user %v", username)
+	return "", false
 }
 
 func (a *Auth) loadPermissionsByName(username string) (perm map[string][]string, err error) {

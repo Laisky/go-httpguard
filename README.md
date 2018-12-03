@@ -21,6 +21,7 @@ backend: "http://xxx"
 secret: "123456"
 users:
   - username: "readonly"
+    password: "readonly"
     permissions:
       get:
         - "/"
@@ -34,6 +35,15 @@ users:
         - "/"
       post:
         - "/"
+```
+
+token:
+
+```js
+{
+  "username": "laisky",
+  "expires_at": "2118-01-01"
+}
 ```
 
 Each request should has the Cookie named `token`:

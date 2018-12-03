@@ -7,9 +7,13 @@ services:
     networks:
       - go-httpguard
     logging:
-      driver: "json-file"
+      # driver: "json-file"
+      # options:
+      #   max-size: 10m
+      driver: "fluentd"
       options:
-        max-size: 10m
+        tag: httpguard.sit
+        fluentd-address: hbase1.sit.ptcloud.t.home:24225
     environment:
       - TASKS=heartbeat,es-monitor,fl-monitor,es-rollover
     volumes:
