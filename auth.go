@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/valyala/fasthttp"
-
 	chaining "github.com/Laisky/go-chaining"
 	utils "github.com/Laisky/go-utils"
+	"github.com/Laisky/zap"
 	"github.com/pkg/errors"
+	"github.com/valyala/fasthttp"
 )
 
 type Auth struct {
@@ -74,7 +74,7 @@ func (a *Auth) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err error) {
 
 	// auth by basicaith
 	auth := ctx.Ctx.Request.Header.Peek("Authorization")
-	utils.Logger.Debugf("got authorization auth: %v", string(auth))
+	utils.Logger.Debug("got authorization auth", zap.String("auth'", string(auth)))
 	if len(auth) > 0 {
 		utils.Logger.Debug("validate by basic auth...")
 		payload, err := base64.StdEncoding.DecodeString(string(auth[len(basicAuthPrefix):]))
@@ -100,7 +100,7 @@ func (a *Auth) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err error) {
 }
 
 func (a *Auth) loadPasswdByName(username string) (passwd string, ok bool) {
-	utils.Logger.Debugf("loadPasswdByName for %v", username)
+	utils.Logger.Debug("loadPasswdByName", zap.String("username", username))
 	var umi map[interface{}]interface{}
 	for _, ui := range utils.Settings.Get("users").([]interface{}) {
 		umi = ui.(map[interface{}]interface{})
@@ -111,7 +111,7 @@ func (a *Auth) loadPasswdByName(username string) (passwd string, ok bool) {
 		}
 	}
 
-	utils.Logger.Debugf("can not load password for user %v", username)
+	utils.Logger.Debug("can not load password", zap.String("username", username))
 	return "", false
 }
 
@@ -153,12 +153,11 @@ func (a *Auth) validateToken(token string) (payload map[string]interface{}, err 
 
 // validateMethodAndPath chech path & method is legal
 func (a *Auth) validateMethodAndPath(method, path string, permissions map[string][]string) (ok bool) {
-	utils.Logger.Debugf("validateMethodAndPath for method %v, path %v, permissions %+v", method, path, permissions)
+	utils.Logger.Debug("validateMethodAndPath", zap.String("method", method), zap.String("path", path))
 	for pm, pps := range permissions {
 		if strings.ToLower(pm) == strings.ToLower(method) {
-			utils.Logger.Debugf("check method %v", method)
+			utils.Logger.Debug("check method", zap.String("method", method))
 			for _, pp := range pps {
-				utils.Logger.Debugf("check path %v:%v", pp, path)
 				if strings.Index(path, pp) == 0 {
 					return true
 				}
