@@ -22,7 +22,7 @@ func setupSettings() {
 
 func setupCommandArgs() {
 	defer fmt.Println("All done")
-	defer utils.Logger.Flush()
+	defer utils.Logger.Sync()
 	fmt.Println("start main...")
 	pflag.Bool("debug", false, "run in debug mode")
 	pflag.Bool("dry", false, "run in dry mode")

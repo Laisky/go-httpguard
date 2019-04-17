@@ -3,6 +3,7 @@ package httpguard
 import (
 	"github.com/Laisky/go-chaining"
 	utils "github.com/Laisky/go-utils"
+	"github.com/Laisky/zap"
 )
 
 type Audit struct{}
@@ -30,13 +31,12 @@ func (a *Audit) Entrypoint(c *chaining.Chain) (interface{}, error) {
 }
 
 func (a *Audit) PushAuditRecord(data map[string]interface{}) {
-	utils.Logger.Infof("user %v %v %v", data["username"], data["method"], data["path"])
 	reqData := &utils.RequestData{
 		Data: data,
 	}
 	var resp interface{}
 	err := utils.RequestJSONWithClient(httpClient, "post", utils.Settings.GetString("audit"), reqData, &resp)
 	if err != nil {
-		utils.Logger.Errorf("try to push audit log got error %+v", err)
+		utils.Logger.Error("try to push audit log got error", zap.Error(err))
 	}
 }
