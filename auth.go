@@ -72,8 +72,8 @@ func (a *Auth) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err error) {
 		}
 
 		return &userInfo{
-			username: payload[a.UserIDKey],
-			expires:  payload[a.ExpiresAtKey],
+			username: payload[a.JWTUserIDKey],
+			expires:  payload[a.JWTExpiresAtKey],
 		}, nil
 	}
 
