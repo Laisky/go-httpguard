@@ -14,13 +14,18 @@ import (
 )
 
 type Auth struct {
-	utils.JWT
+	*utils.JWT
 }
 
 func NewAuth(secret string) *Auth {
-	a := &Auth{}
-	a.Setup(secret)
-	return a
+	j, err := utils.NewJWT(utils.NewJWTCfg([]byte(secret)))
+	if err != nil {
+		utils.Logger.Panic("init auth got error", zap.Error(err))
+	}
+
+	return &Auth{
+		JWT: j,
+	}
 }
 
 func (a *Auth) Entrypoint(c *chaining.Chain) (interface{}, error) {
@@ -67,8 +72,8 @@ func (a *Auth) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err error) {
 		}
 
 		return &userInfo{
-			username: payload[a.TKUsername],
-			expires:  payload[a.TKExpiresAt],
+			username: payload[a.JWTUserIDKey],
+			expires:  payload[a.JWTExpiresAtKey],
 		}, nil
 	}
 
