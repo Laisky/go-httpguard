@@ -1,4 +1,4 @@
-# GO-HTTPGuard
+# Go-HTTPGuard
 
 Prepare:
 
@@ -41,8 +41,8 @@ token:
 
 ```js
 {
-  "username": "laisky",
-  "expires_at": "2118-01-01"
+  "exp": 4701978061,
+  "uid": "jiudian-ai"
 }
 ```
 
@@ -53,10 +53,10 @@ Each request should has the Cookie named `token`:
 You can try with readonly token:
 
 ```
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmVzX2F0IjoiMjI4Ni0xMS0yMFQxNzo0Njo0MFoiLCJ1c2VybmFtZSI6InJlYWRvbmx5In0.CSb3uVJ-8mXOM0uo1SUkAalQpwmnAU6QvWta6FF3LXo
+eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjQ3MDE5NzgwNjEsInVpZCI6InJlYWRvbmx5In0.PRDnh3tpfxd2G4TDj29HW3QA5dZKq068AYaLSTpA2LQFuAZD-luXvorUfvIXGKY1ESkHVPbkvWEZaX7tTh2E8w
 ```
 
-(You can generate HS256 token at [https://jwt.io/](https://jwt.io/))
+(You can generate HS512 token at [https://jwt.io/](https://jwt.io/))
 
-![generate](https://s3.laisky.com/uploads/2018/06/jwt-generate.jpg)
+![generate](https://s3.laisky.com/uploads/2019/12/go-httpguard.png)
 
