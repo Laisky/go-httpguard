@@ -18,6 +18,9 @@ services:
       - TASKS=heartbeat,es-monitor,fl-monitor,es-rollover
     volumes:
       - /opt/configs/go-httpguard:/etc/go-httpguard
+    command:
+      --config=/etc/go-httpguard/settings.yml
+      --host=prod
     ports:
       - 24215:24215
 
