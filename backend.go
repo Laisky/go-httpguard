@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/Laisky/go-chaining"
@@ -21,12 +20,6 @@ var (
 			MaxIdleConnsPerHost: 20,
 		},
 		Timeout: time.Duration(30) * time.Second,
-	}
-
-	bbPool = &sync.Pool{
-		New: func() interface{} {
-			return []byte{}
-		},
 	}
 )
 
@@ -67,11 +60,9 @@ func (b *Backend) RequestBackend(ctx *fasthttp.RequestCtx, url string) (err erro
 	}
 
 	defer resp.Body.Close()
-	bb := bbPool.Get().([]byte)
+	var bb []byte
 	bb, err = ioutil.ReadAll(resp.Body)
 	ctx.SetBody(bb)
-	bbPool.Put(bb)
 	ctx.SetStatusCode(resp.StatusCode)
-
 	return nil
 }
