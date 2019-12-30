@@ -18,7 +18,7 @@ type Auth struct {
 }
 
 func NewAuth(secret string) *Auth {
-	j, err := utils.NewJWT(utils.NewJWTCfg([]byte(secret)))
+	j, err := utils.NewJWT([]byte(secret))
 	if err != nil {
 		utils.Logger.Panic("init auth got error", zap.Error(err))
 	}
@@ -72,8 +72,8 @@ func (a *Auth) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err error) {
 		}
 
 		return &userInfo{
-			username: payload[a.JWTUserIDKey],
-			expires:  payload[a.JWTExpiresAtKey],
+			username: payload[a.GetUserIDKey()],
+			expires:  payload[a.GetExpiresKey()],
 		}, nil
 	}
 
@@ -160,7 +160,7 @@ func (a *Auth) validateToken(token string) (payload map[string]interface{}, err 
 func (a *Auth) validateMethodAndPath(method, path string, permissions map[string][]string) (ok bool) {
 	utils.Logger.Debug("validateMethodAndPath", zap.String("method", method), zap.String("path", path))
 	for pm, pps := range permissions {
-		if strings.ToLower(pm) == strings.ToLower(method) {
+		if strings.EqualFold(pm, method) {
 			utils.Logger.Debug("check method", zap.String("method", method))
 			for _, pp := range pps {
 				if strings.Index(path, pp) == 0 {
