@@ -1,6 +1,8 @@
 package httpguard
 
 import (
+	"time"
+
 	"github.com/Laisky/go-chaining"
 	utils "github.com/Laisky/go-utils"
 	"github.com/Laisky/zap"
@@ -19,8 +21,8 @@ func (a *Audit) Entrypoint(c *chaining.Chain) (interface{}, error) {
 	}
 
 	go a.PushAuditRecord(map[string]interface{}{
-		"username":   ctx.Meta[Username],
-		"expires_at": ctx.Meta[ExpiresAt],
+		"username":   ctx.Meta[Username].(string),
+		"expires_at": ctx.Meta[ExpiresAt].(time.Time).Format(time.RFC3339Nano),
 		"path":       string(ctx.Ctx.Path()),
 		"method":     string(ctx.Ctx.Method()),
 		"body":       string(ctx.Ctx.PostBody()),

@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strings"
+	"time"
 
 	chaining "github.com/Laisky/go-chaining"
 	utils "github.com/Laisky/go-utils"
@@ -39,7 +40,7 @@ func (a *Auth) Entrypoint(c *chaining.Chain) (interface{}, error) {
 
 	username := uinfo.username
 	expires := uinfo.expires
-	perms, err := a.loadPermissionsByName(username.(string))
+	perms, err := a.loadPermissionsByName(username)
 	if err != nil {
 		ctx.Ctx.Response.SetStatusCode(fasthttp.StatusForbidden)
 		return nil, errors.Wrap(err, "token is illegal")
@@ -57,7 +58,8 @@ func (a *Auth) Entrypoint(c *chaining.Chain) (interface{}, error) {
 }
 
 type userInfo struct {
-	username, expires interface{}
+	username string
+	expires  time.Time
 }
 
 var basicAuthPrefix = []byte("Basic ")
@@ -68,12 +70,42 @@ func (a *Auth) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err error) {
 		utils.Logger.Debug("validate by jwt...")
 		payload, err := a.validateToken(string(token))
 		if err != nil {
-			return nil, errors.Wrap(err, "token is illegal")
+			// return nil, errors.Wrap(err, "token is illegal")
+
+			// compatible for legacy token
+			utils.Logger.Warn("compatible legacy token", zap.Error(err), zap.String("payload", fmt.Sprint(payload)))
+			if !strings.Contains(err.Error(), "method") {
+				return nil, errors.Wrap(err, "token is illegal")
+			}
+		}
+
+		// compatible for legacy token
+		var (
+			usernamei, expiresi interface{}
+			username            string
+			expires             time.Time
+			ok                  bool
+		)
+		if usernamei, ok = payload[a.GetUserIDKey()]; !ok {
+			if usernamei, ok = payload["username"]; !ok {
+				return nil, errors.Errorf("unknown user key: %+v", payload)
+			}
+		}
+		username = usernamei.(string)
+		if expiresi, ok = payload[a.GetExpiresKey()]; !ok {
+			if expiresi, ok = payload["expires_at"]; !ok {
+				return nil, errors.Errorf("unknown user key: %+v", payload)
+			}
+			if expires, err = time.Parse(time.RFC3339, expiresi.(string)); err != nil {
+				return nil, errors.Wrapf(err, "unkndown format of expires: %v", expiresi.(string))
+			}
+		} else {
+			expires = expiresi.(time.Time)
 		}
 
 		return &userInfo{
-			username: payload[a.GetUserIDKey()],
-			expires:  payload[a.GetExpiresKey()],
+			username: username,
+			expires:  expires,
 		}, nil
 	}
 
@@ -150,7 +182,7 @@ func (a *Auth) loadPermissionsByName(username string) (perm map[string][]string,
 func (a *Auth) validateToken(token string) (payload map[string]interface{}, err error) {
 	payload, err = a.Validate(token)
 	if err != nil {
-		return nil, errors.Wrap(err, "token not validate")
+		return payload, errors.Wrap(err, "token not validate")
 	}
 
 	return
