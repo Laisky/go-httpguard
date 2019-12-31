@@ -1,4 +1,4 @@
-FROM golang:1.13.4-alpine3.10 AS gobin
+FROM golang:1.13.5-alpine3.11 AS gobin
 
 RUN apk update && apk upgrade && \
     apk add --no-cache gcc git build-base ca-certificates && \
@@ -14,7 +14,7 @@ RUN go mod download
 ADD . .
 RUN go build -a --ldflags '-extldflags "-static"' entrypoints/main.go
 
-FROM alpine:3.10
+FROM alpine:3.11
 COPY --from=gobin /app/main go-httpguard
 COPY --from=gobin /etc/ssl/certs /etc/ssl/certs
 ENTRYPOINT ["./go-httpguard"]
