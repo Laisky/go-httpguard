@@ -2,7 +2,7 @@ version: "2"
 services:
 
   go-httpguard:
-    image: ppcelery/go-httpguard:0.3.0
+    image: registry.paas.ptcloud.t.home/paas/go-httpguard:302d0f8
     restart: "on-failure"
     networks:
       - go-httpguard
