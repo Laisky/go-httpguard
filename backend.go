@@ -54,6 +54,7 @@ func (b *Backend) RequestBackend(ctx *fasthttp.RequestCtx, url string) (err erro
 		return err
 	}
 
+	req.Header.Add("Content-Type", "application/json")
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
