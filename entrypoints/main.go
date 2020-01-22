@@ -32,36 +32,38 @@ func setupCommandArgs() {
 }
 
 func setupLogger(ctx context.Context) {
-	var err error
-	if utils.Settings.GetBool("debug") { // debug mode
-		fmt.Println("run in debug mode")
-		utils.Settings.Set("log-level", "debug")
-		if err = utils.Logger.ChangeLevel("debug"); err != nil {
-			utils.Logger.Panic("change logger level", zap.Error(err))
+	if !utils.Settings.GetBool("log-alert") {
+		return
+	}
+	utils.Logger.Info("enable alert pusher")
+	utils.Logger = utils.Logger.Named("go-httpguard-" + utils.Settings.GetString("host"))
+
+	if utils.Settings.GetString("logger.push_api") != "" {
+		// telegram alert
+		alertPusher, err := utils.NewAlertPusherWithAlertType(
+			ctx,
+			utils.Settings.GetString("logger.push_api"),
+			utils.Settings.GetString("logger.alert_type"),
+			utils.Settings.GetString("logger.push_token"),
+		)
+		if err != nil {
+			utils.Logger.Panic("create AlertPusher", zap.Error(err))
 		}
-	} else { // prod mode
-		fmt.Println("run in prod mode")
-		if err = utils.Logger.ChangeLevel("info"); err != nil {
-			utils.Logger.Panic("change logger level", zap.Error(err))
-		}
+		utils.Logger = utils.Logger.
+			WithOptions(zap.HooksWithFields(alertPusher.GetZapHook()))
 	}
 
-	alertPusher, err := utils.NewAlertPusherWithAlertType(
-		ctx,
-		utils.Settings.GetString("logger.push_api"),
-		utils.Settings.GetString("logger.alert_type"),
-		utils.Settings.GetString("logger.push_token"),
-	)
-	if err != nil {
-		utils.Logger.Panic("create AlertPusher", zap.Error(err))
-	}
-
-	hook := utils.NewAlertHook(alertPusher)
-	if _, err := utils.SetDefaultLogger(
-		"go-httpguard:"+utils.Settings.GetString("host"),
-		utils.Settings.GetString("log-level"),
-		zap.HooksWithFields(hook.GetZapHook())); err != nil {
-		utils.Logger.Panic("setup logger", zap.Error(err))
+	if utils.Settings.GetString("pateo_alert.push_api") != "" {
+		// pateo wechat alert pusher
+		pateoAlertPusher, err := utils.NewPateoAlertPusher(
+			ctx,
+			utils.Settings.GetString("pateo_alert.push_api"),
+			utils.Settings.GetString("pateo_alert.token"),
+		)
+		if err != nil {
+			utils.Logger.Panic("create PateoAlertPusher", zap.Error(err))
+		}
+		utils.Logger = utils.Logger.WithOptions(zap.HooksWithFields(pateoAlertPusher.GetZapHook()))
 	}
 }
 
