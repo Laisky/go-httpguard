@@ -25,6 +25,7 @@ var rootCMD = &cobra.Command{
 			httpguard.NewAuth(
 				httpguard.NewJwtAuthPlugin(httpguard.Config.JWTSecret),
 				httpguard.NewBasicAuthPlugin(),
+				httpguard.NewAwsAuthPlugin(),
 			),
 			httpguard.NewAudit(),
 			httpguard.NewBackend(),

@@ -1,13 +1,13 @@
 listen: "0.0.0.0:24215"
-backend: "http://blog.laisky.com"
+backend: "http://100.97.108.34:8333"
 users:
-  - username: "readonly"
+  - username: "laisky"
     basic_auth:
       enable: true
-      password: "readonly"
+      password: "laisky"
     s3:
       enable: true
-      app_secret: "readonly"
+      app_secret: "laisky"
     jwt:
       enable: true
     permission:

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Laisky/go-chaining"
-	"github.com/Laisky/go-utils"
 	"github.com/Laisky/zap"
 	"github.com/pkg/errors"
 	"github.com/valyala/fasthttp"
@@ -38,9 +37,9 @@ func (co *Controllor) MiddlewareChain(c *chaining.Chain) *chaining.Chain {
 }
 
 func (c *Controllor) Run(ctx context.Context) (err error) {
-	addr := utils.Settings.GetString("addr")
-	utils.Logger.Info("listen addr", zap.String("addr", addr))
-	if err := fasthttp.ListenAndServe(addr, fasthttp.CompressHandler(getRequestHandler(c))); err != nil {
+	listen := Config.Listen
+	Logger.Info("listen addr", zap.String("addr", listen))
+	if err := fasthttp.ListenAndServe(listen, fasthttp.CompressHandler(getRequestHandler(c))); err != nil {
 		return errors.Wrap(err, "try to listen server error")
 	}
 
@@ -51,7 +50,7 @@ func getRequestHandler(co *Controllor) func(ctx *fasthttp.RequestCtx) {
 	return func(ctx *fasthttp.RequestCtx) {
 		defer func() {
 			if err := recover(); err != nil {
-				utils.Logger.Error("requests got error", zap.Error(err.(error)))
+				Logger.Error("requests got error", zap.Error(err.(error)))
 			}
 		}()
 
@@ -61,7 +60,7 @@ func getRequestHandler(co *Controllor) func(ctx *fasthttp.RequestCtx) {
 		}, nil))
 
 		if c.GetError() != nil {
-			utils.Logger.Info("controllor got error", zap.Error(c.GetError()))
+			Logger.Info("controllor got error", zap.Error(c.GetError()))
 		}
 	}
 }

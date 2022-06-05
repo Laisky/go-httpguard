@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/Laisky/go-chaining"
-	utils "github.com/Laisky/go-utils"
 	"github.com/Laisky/zap"
 	"github.com/pkg/errors"
 	"github.com/valyala/fasthttp"
@@ -31,11 +30,8 @@ func NewBackend() *Backend {
 
 func (b *Backend) Entrypoint(c *chaining.Chain) (ret interface{}, err error) {
 	ctx := c.GetVal().(*CtxMeta)
-	url := utils.Settings.GetString("backend") + string(ctx.Ctx.RequestURI())
-	utils.Logger.Debug("request to backend for url", zap.String("url", url))
-	if utils.Settings.GetBool("dry") {
-		return ctx, nil
-	}
+	url := Config.Backend + string(ctx.Ctx.RequestURI())
+	Logger.Debug("request to backend for url", zap.String("url", url))
 
 	err = b.RequestBackend(ctx.Ctx, url)
 	if err != nil {

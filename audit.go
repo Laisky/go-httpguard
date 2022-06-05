@@ -14,9 +14,6 @@ func NewAudit() *Audit {
 
 func (a *Audit) Entrypoint(c *chaining.Chain) (interface{}, error) {
 	ctx := c.GetVal().(*CtxMeta)
-	if gutils.Settings.GetBool("dry") {
-		return ctx, nil
-	}
 
 	// go a.PushAuditRecord(map[string]interface{}{
 	// 	"username":   ctx.Meta[Username].(string),
@@ -45,6 +42,6 @@ func (a *Audit) PushAuditRecord(data map[string]interface{}) {
 	var resp interface{}
 	err := gutils.RequestJSONWithClient(httpClient, "post", gutils.Settings.GetString("audit"), reqData, &resp)
 	if err != nil {
-		gutils.Logger.Error("try to push audit log got error", zap.Error(err))
+		Logger.Error("try to push audit log got error", zap.Error(err))
 	}
 }

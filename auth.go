@@ -7,7 +7,6 @@ import (
 	"time"
 
 	chaining "github.com/Laisky/go-chaining"
-	gutils "github.com/Laisky/go-utils"
 	"github.com/Laisky/zap"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/pkg/errors"
@@ -70,22 +69,6 @@ func (a *Auth) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err error) {
 	}
 
 	return nil, errors.Wrap(err, "authentication failed")
-}
-
-func (a *Auth) loadPasswdByName(username string) (passwd string, ok bool) {
-	Logger.Debug("loadPasswdByName", zap.String("username", username))
-	var umi map[interface{}]interface{}
-	for _, ui := range gutils.Settings.Get("users").([]interface{}) {
-		umi = ui.(map[interface{}]interface{})
-		if umi["username"].(string) == username {
-			if pw, ok := umi["password"]; ok {
-				return pw.(string), true
-			}
-		}
-	}
-
-	Logger.Debug("can not load password", zap.String("username", username))
-	return "", false
 }
 
 func (a *Auth) loadPermissionsByName(username string) (perm configUserPerm, err error) {

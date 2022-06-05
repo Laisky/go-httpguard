@@ -4,8 +4,12 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"net/http"
+	"net/url"
+	"regexp"
 	"strings"
 
+	"github.com/Laisky/go-aws-auth"
 	gutils "github.com/Laisky/go-utils"
 	"github.com/Laisky/zap"
 	"github.com/pkg/errors"
@@ -107,4 +111,57 @@ func (p *BasicAuthPlugin) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err er
 	}
 
 	return nil, errors.New("auth failed")
+}
+
+type AwsAuthPlugin struct {
+}
+
+func NewAwsAuthPlugin() *AwsAuthPlugin {
+	return &AwsAuthPlugin{}
+}
+
+var regexpAwsUsername = regexp.MustCompile(`Credential=([^/]+)/`)
+
+func (p *AwsAuthPlugin) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err error) {
+	rawAuth := ctx.Ctx.Request.Header.Peek("Authorization")
+
+	matched := regexpAwsUsername.FindAllStringSubmatch(string(rawAuth), -1)
+	if len(matched) == 0 {
+		return nil, errors.New("no aws auth found")
+	}
+	if len(matched[0]) != 2 {
+		return nil, errors.New("aws auth format error")
+	}
+
+	expectReq := &http.Request{
+		Method: string(ctx.Ctx.Request.Header.Method()),
+		Host:   string(ctx.Ctx.Request.Host()),
+		Proto:  string(ctx.Ctx.Request.Header.Protocol()),
+		Header: http.Header{},
+	}
+
+	if requrl, err := url.ParseRequestURI(string(ctx.Ctx.Request.RequestURI())); err != nil {
+		return nil, errors.Wrapf(err, "parse request uri `%s`", string(ctx.Ctx.Request.RequestURI()))
+	} else {
+		expectReq.URL = requrl
+	}
+
+	ctx.Ctx.Request.Header.VisitAll(func(key, value []byte) {
+		expectReq.Header.Add(string(key), string(value))
+	})
+
+	username := matched[0][1]
+	expectReq = awsauth.Sign4(expectReq, awsauth.Credentials{
+		AccessKeyID:     username,
+		SecretAccessKey: Config.UsersMap[username].S3.AppSecret,
+	})
+
+	if expectReq.Header.Get("Authorization") != string(rawAuth) {
+		return nil, errors.New("aws auth invalid")
+	}
+
+	return &userInfo{
+		username: username,
+	}, nil
+
 }
