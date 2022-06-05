@@ -111,3 +111,6 @@ vendor
 # pprof
 memory.pprof
 cpu.pprof
+
+# build
+/gohttpguard

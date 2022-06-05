@@ -1,0 +1,17 @@
+listen: "0.0.0.0:24215"
+backend: "http://blog.laisky.com"
+users:
+  - username: "readonly"
+    basic_auth:
+      enable: true
+      password: "readonly"
+    s3:
+      enable: true
+      app_secret: "readonly"
+    jwt:
+      enable: true
+    permission:
+      read:
+        - "/"
+      write:
+        - "/"

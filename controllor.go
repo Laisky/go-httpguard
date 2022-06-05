@@ -1,14 +1,14 @@
 package httpguard
 
 import (
+	"context"
+
 	"github.com/Laisky/go-chaining"
 	"github.com/Laisky/go-utils"
 	"github.com/Laisky/zap"
 	"github.com/pkg/errors"
 	"github.com/valyala/fasthttp"
 )
-
-var ()
 
 type CtxMeta struct {
 	Ctx  *fasthttp.RequestCtx
@@ -37,7 +37,7 @@ func (co *Controllor) MiddlewareChain(c *chaining.Chain) *chaining.Chain {
 	return c
 }
 
-func (c *Controllor) Run() (err error) {
+func (c *Controllor) Run(ctx context.Context) (err error) {
 	addr := utils.Settings.GetString("addr")
 	utils.Logger.Info("listen addr", zap.String("addr", addr))
 	if err := fasthttp.ListenAndServe(addr, fasthttp.CompressHandler(getRequestHandler(c))); err != nil {
