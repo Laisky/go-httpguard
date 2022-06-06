@@ -28,12 +28,12 @@ func NewController(middlewares ...Middleware) *Controllor {
 	}
 }
 
-func (co *Controllor) MiddlewareChain(c *chaining.Chain) *chaining.Chain {
-	for _, m := range co.middlewares {
-		c = c.Next(m.Entrypoint)
+func (c *Controllor) MiddlewareChain(chain *chaining.Chain) *chaining.Chain {
+	for _, m := range c.middlewares {
+		chain = chain.Next(m.Entrypoint)
 	}
 
-	return c
+	return chain
 }
 
 func (c *Controllor) Run(ctx context.Context) (err error) {

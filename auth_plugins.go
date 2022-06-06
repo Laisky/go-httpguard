@@ -94,23 +94,22 @@ func (p *BasicAuthPlugin) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err er
 	}
 
 	username := string(pair[0])
-	if userCfg, ok := Config.UsersMap[username]; !ok {
+	userCfg, ok := Config.UsersMap[username]
+	if !ok {
 		return nil, errors.Errorf("user %v not found", username)
-	} else {
-		if !Config.UsersMap[username].BasicAuth.Enable {
-			return nil, errors.Errorf("user %v not enable basicauth", username)
-		}
-
-		if string(pair[1]) == userCfg.BasicAuth.Password {
-			return &userInfo{
-				username: username,
-			}, nil
-		}
-
-		return nil, errors.Errorf("password not match")
 	}
 
-	return nil, errors.New("auth failed")
+	if !Config.UsersMap[username].BasicAuth.Enable {
+		return nil, errors.Errorf("user %v not enable basicauth", username)
+	}
+
+	if string(pair[1]) == userCfg.BasicAuth.Password {
+		return &userInfo{
+			username: username,
+		}, nil
+	}
+
+	return nil, errors.Errorf("password not match")
 }
 
 type AwsAuthPlugin struct {
@@ -140,11 +139,11 @@ func (p *AwsAuthPlugin) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err erro
 		Header: http.Header{},
 	}
 
-	if requrl, err := url.ParseRequestURI(string(ctx.Ctx.Request.RequestURI())); err != nil {
+	requrl, err := url.ParseRequestURI(string(ctx.Ctx.Request.RequestURI()))
+	if err != nil {
 		return nil, errors.Wrapf(err, "parse request uri `%s`", string(ctx.Ctx.Request.RequestURI()))
-	} else {
-		expectReq.URL = requrl
 	}
+	expectReq.URL = requrl
 
 	ctx.Ctx.Request.Header.VisitAll(func(key, value []byte) {
 		expectReq.Header.Add(string(key), string(value))

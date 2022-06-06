@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	gutils "github.com/Laisky/go-utils"
 	gcmd "github.com/Laisky/go-utils/cmd"
@@ -48,14 +47,22 @@ func setupSettings() {
 	if err = gutils.Settings.Unmarshal(httpguard.Config); err != nil {
 		httpguard.Logger.Panic("unmarshal config", zap.Error(err))
 	}
-
 	httpguard.Config.Init()
 
-	fmt.Printf(">> \n%+v\n", httpguard.Config)
+	if httpguard.Config.Runtime.Debug {
+		if err := httpguard.Logger.ChangeLevel(gutils.LoggerLevelDebug); err != nil {
+			httpguard.Logger.Panic("change logger level", zap.Error(err))
+		}
+
+		httpguard.Logger.Debug("run in debug mode")
+	}
 }
 
 func init() {
-	rootCMD.PersistentFlags().Bool("debug", false, "run in debug mode")
+	rootCMD.PersistentFlags().BoolVar(&httpguard.Config.Runtime.Debug,
+		"debug",
+		false,
+		"run in debug mode")
 	rootCMD.PersistentFlags().StringVarP(&httpguard.Config.Runtime.ConfigFile,
 		"config", "c",
 		"/etc/go-httpguard/config.yml",

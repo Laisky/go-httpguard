@@ -41,8 +41,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Laisky/fast-skiplist v0.0.0-20210907063351-e00546c800a6 h1:V3MNilKNjNVKwBiMLsDCa6dFbA5gROE7TYxJJBXkwTc=
 github.com/Laisky/fast-skiplist v0.0.0-20210907063351-e00546c800a6/go.mod h1:BdpS7FU5kzp0QV/dtCWheAV5rIOQu+Jb+uoVuVWZOvU=
-github.com/Laisky/go-aws-auth v0.0.0-20220605142235-cb3cc6d3e45a h1:oxAf5Ost5jIh20uFJzZbzVu6HJlznZL8X/T8goEg8eE=
-github.com/Laisky/go-aws-auth v0.0.0-20220605142235-cb3cc6d3e45a/go.mod h1:rCxpW588ZVZvDZJHsUgbaZ/HiEVfuOsiD42IJCOdf6g=
+github.com/Laisky/go-aws-auth v0.0.0-20220606012045-deedab0ea76b h1:WkJnRF8zE3EzLd9lgIvv7/6+1iLgMIcWZz6AOGYy8O4=
+github.com/Laisky/go-aws-auth v0.0.0-20220606012045-deedab0ea76b/go.mod h1:rCxpW588ZVZvDZJHsUgbaZ/HiEVfuOsiD42IJCOdf6g=
 github.com/Laisky/go-chaining v0.0.0-20180507092046-43dcdc5a21be h1:7Rxhm6IjOtDAyj8eScOFntevwzkWhx94zi48lxo4m4w=
 github.com/Laisky/go-chaining v0.0.0-20180507092046-43dcdc5a21be/go.mod h1:1mdzaETo0kjvCQICPSePsoaatJN4l7JvEA1200lyevo=
 github.com/Laisky/go-utils v1.17.0 h1:RYbeDtM35/N3Z61h3DZZfzCvTPoTChPizhsiWVVq3yc=

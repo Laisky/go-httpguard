@@ -14,4 +14,4 @@ users:
       read:
         - "/"
       write:
-        - "/"
+        - "/test"
