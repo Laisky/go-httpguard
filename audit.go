@@ -27,8 +27,8 @@ func (a *Audit) Entrypoint(c *chaining.Chain) (interface{}, error) {
 	if gutils.InArray([]string{"POST", "PUT", "DELETE", "PATCH"}, string(ctx.Ctx.Method())) {
 		Logger.Info("audit",
 			zap.Any("user", ctx.Meta[Username]),
-			zap.Any("path", ctx.Ctx.Path()),
-			zap.Any("method", ctx.Ctx.Method()),
+			zap.ByteString("path", ctx.Ctx.Path()),
+			zap.ByteString("method", ctx.Ctx.Method()),
 		)
 	}
 

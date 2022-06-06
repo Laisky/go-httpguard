@@ -101,7 +101,9 @@ func (a *Auth) loadPermissionsByName(username string) (perm configUserPerm, err 
 
 // validateMethodAndPath chech path & method is legal
 func (a *Auth) validateMethodAndPath(method, path string, perm configUserPerm) (ok bool) {
-	Logger.Debug("validateMethodAndPath", zap.String("method", method), zap.String("path", path))
+	Logger.Debug("validateMethodAndPath",
+		zap.String("method", method),
+		zap.String("path", path))
 	var allowedUrls []string
 	switch method {
 	case http.MethodGet, http.MethodHead, http.MethodOptions:

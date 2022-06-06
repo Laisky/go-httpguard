@@ -30,6 +30,13 @@ func NewBackend() *Backend {
 
 func (b *Backend) Entrypoint(c *chaining.Chain) (ret interface{}, err error) {
 	ctx := c.GetVal().(*CtxMeta)
+
+	if ctx.Ctx.Request.URI().QueryArgs().Has("policy") {
+		ctx.Ctx.SetBody([]byte(`{"Version": "2012-10-17","Statement": [{"Sid": "PublicRead","Effect": "Allow","Principal": "*","Action": ["*"],"Resource": ["arn:aws:s3:::*"]}]`))
+		ctx.Ctx.SetStatusCode(fasthttp.StatusOK)
+		return ctx, nil
+	}
+
 	url := Config.Backend + string(ctx.Ctx.RequestURI())
 	Logger.Debug("request to backend for url", zap.String("url", url))
 

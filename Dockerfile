@@ -1,8 +1,9 @@
-FROM golang:1.13.5-alpine3.11 AS gobin
+FROM golang:1.17.8-bullseye AS gobuild
 
-RUN apk update && apk upgrade && \
-    apk add --no-cache gcc git build-base ca-certificates && \
-    update-ca-certificates
+# install dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends g++ make gcc git build-essential ca-certificates curl \
+    && update-ca-certificates
 
 ENV GO111MODULE=on
 WORKDIR /app
@@ -12,9 +13,24 @@ RUN go mod download
 
 # static build
 ADD . .
-RUN go build -a --ldflags '-extldflags "-static"' entrypoints/main.go
+RUN go build -a -ldflags '-w -extldflags "-static"' -o main ./cmd/gohttpguard
 
-FROM alpine:3.11
-COPY --from=gobin /app/main go-httpguard
-COPY --from=gobin /etc/ssl/certs /etc/ssl/certs
-ENTRYPOINT ["./go-httpguard"]
+
+# copy executable file and certs to a pure container
+FROM debian:bullseye
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates haveged \
+    && update-ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=gobuild /etc/ssl/certs /etc/ssl/certs
+COPY --from=gobuild /app/main /app/gohttpguard
+
+WORKDIR /app
+RUN chmod +rx -R /app && \
+    adduser --disabled-password --gecos '' laisky
+USER laisky
+
+ENTRYPOINT [ "/app/gohttpguard" ]
+CMD [ "-c", "/etc/gohttpguard/config.yml" ]
