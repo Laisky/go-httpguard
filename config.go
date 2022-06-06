@@ -9,6 +9,7 @@ type ConfigType struct {
 	JWTSecret string                `mapstructure:"jwt_secret"`
 	Users     []configUser          `mapstructure:"users"`
 	UsersMap  map[string]configUser `mapstructure:"-"`
+	Bypass    configUserPerm        `mapstructure:"bypass"`
 }
 
 func (c *ConfigType) Init() *ConfigType {

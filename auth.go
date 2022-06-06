@@ -28,29 +28,48 @@ func NewAuth(plugins ...AuthPlugin) *Auth {
 func (a *Auth) Entrypoint(c *chaining.Chain) (interface{}, error) {
 	ctx := c.GetVal().(*CtxMeta)
 
-	uinfo, err := a.loadUserInfo(ctx)
-	if err != nil {
-		ctx.Ctx.Response.SetStatusCode(fasthttp.StatusForbidden)
-		return nil, err
-	}
+	var (
+		username string
+		expires  time.Time
+	)
 
-	username := uinfo.username
-	expires := uinfo.expires
-	perms, err := a.loadPermissionsByName(username)
-	if err != nil {
-		ctx.Ctx.Response.SetStatusCode(fasthttp.StatusForbidden)
-		return nil, errors.Wrap(err, "token is illegal")
-	}
+	if a.checkBypass(ctx) {
+		Logger.Debug("bypass auth",
+			zap.String("method", string(ctx.Ctx.Method())),
+			zap.String("path", string(ctx.Ctx.Path())))
+		username = "guest"
+	} else {
+		uinfo, err := a.loadUserInfo(ctx)
+		if err != nil {
+			ctx.Ctx.Response.SetStatusCode(fasthttp.StatusForbidden)
+			return nil, err
+		}
 
-	ok := a.validateMethodAndPath(string(ctx.Ctx.Method()), string(ctx.Ctx.Path()), perms)
-	if !ok {
-		ctx.Ctx.Response.SetStatusCode(fasthttp.StatusForbidden)
-		return nil, fmt.Errorf("method [%v] is illegle", string(ctx.Ctx.Method()))
+		username = uinfo.username
+		expires = uinfo.expires
+		perms, err := a.loadPermissionsByName(username)
+		if err != nil {
+			ctx.Ctx.Response.SetStatusCode(fasthttp.StatusForbidden)
+			return nil, errors.Wrap(err, "token is illegal")
+		}
+
+		ok := a.validateMethodAndPath(string(ctx.Ctx.Method()), string(ctx.Ctx.Path()), perms)
+		if !ok {
+			ctx.Ctx.Response.SetStatusCode(fasthttp.StatusForbidden)
+			return nil, fmt.Errorf("method [%v] is illegle", string(ctx.Ctx.Method()))
+		}
 	}
 
 	ctx.Meta[Username] = username
 	ctx.Meta[ExpiresAt] = expires
 	return ctx, nil
+}
+
+func (a *Auth) checkBypass(ctx *CtxMeta) (ok bool) {
+	return a.validateMethodAndPath(
+		string(ctx.Ctx.Method()),
+		string(ctx.Ctx.Path()),
+		Config.Bypass)
 }
 
 type userInfo struct {

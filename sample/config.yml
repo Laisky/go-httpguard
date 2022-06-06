@@ -1,5 +1,8 @@
 listen: "0.0.0.0:24215"
 backend: "http://100.97.108.34:8333"
+bypass:
+  read:
+    - "/"
 users:
   - username: "laisky"
     basic_auth:
