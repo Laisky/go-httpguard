@@ -3,7 +3,7 @@ module github.com/Laisky/go-httpguard/v2
 go 1.18
 
 require (
-	github.com/Laisky/go-aws-auth v0.0.0-20220606012045-deedab0ea76b
+	github.com/Laisky/go-aws-auth v0.0.0-20220607065240-f2161020c03a
 	github.com/Laisky/go-chaining v0.0.0-20180507092046-43dcdc5a21be
 	github.com/Laisky/go-utils v1.17.0
 	github.com/Laisky/zap v1.19.3-0.20211118020215-b17f220cebee

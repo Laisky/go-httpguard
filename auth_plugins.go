@@ -120,6 +120,7 @@ func NewAwsAuthPlugin() *AwsAuthPlugin {
 }
 
 var regexpAwsUsername = regexp.MustCompile(`Credential=([^/]+)/`)
+var regexpSignature = regexp.MustCompile(`Signature=(\w+)`)
 
 func (p *AwsAuthPlugin) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err error) {
 	rawAuth := ctx.Ctx.Request.Header.Peek("Authorization")
@@ -145,7 +146,9 @@ func (p *AwsAuthPlugin) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err erro
 	}
 	expectReq.URL = requrl
 
+	rawHeaders := map[string]string{}
 	ctx.Ctx.Request.Header.VisitAll(func(key, value []byte) {
+		rawHeaders[string(key)] = string(value)
 		expectReq.Header.Add(string(key), string(value))
 	})
 
@@ -155,7 +158,24 @@ func (p *AwsAuthPlugin) loadUserInfo(ctx *CtxMeta) (userinfo *userInfo, err erro
 		SecretAccessKey: Config.UsersMap[username].S3.AppSecret,
 	})
 
-	if expectReq.Header.Get("Authorization") != string(rawAuth) {
+	var (
+		rawSig, expectSig string
+	)
+	if matched := regexpSignature.FindAllStringSubmatch(
+		string(rawAuth), -1,
+	); len(matched) > 0 {
+		rawSig = matched[0][1]
+	}
+	if matched := regexpSignature.FindAllStringSubmatch(
+		expectReq.Header.Get("Authorization"), -1,
+	); len(matched) > 0 {
+		expectSig = matched[0][1]
+	}
+
+	if rawSig != expectSig {
+		Logger.Debug("expect auth",
+			zap.String("expect", expectReq.Header.Get("Authorization")),
+			zap.String("actual", string(rawAuth)))
 		return nil, errors.New("aws auth invalid")
 	}
 
