@@ -14,7 +14,7 @@ RUN go mod download
 ADD . .
 RUN go build -a --ldflags '-extldflags "-static"' entrypoints/main.go
 
-FROM alpine:3.11
+FROM alpine:3
 COPY --from=gobin /app/main go-httpguard
 COPY --from=gobin /etc/ssl/certs /etc/ssl/certs
 ENTRYPOINT ["./go-httpguard"]
