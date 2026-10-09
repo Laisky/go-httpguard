@@ -26,5 +26,7 @@ which selects the fixed crypto and text dependency versions. Security metadata
 covers the dependency graph and does not establish that every advisory is
 reachable through this application.
 
-The Docker builder explicitly uses external static linking so its patched
-Bookworm compiler remains compatible with the retained Bullseye runtime.
+The Docker build uses patched Go 1.26.9 on Bookworm and explicitly enables
+external static linking. The runtime now uses supported Debian Bookworm:
+the previous Bullseye security-package URLs returned 404 during a fresh build.
+The existing runtime package, user and startup commands are preserved.

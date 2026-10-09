@@ -17,7 +17,7 @@ RUN go build -a -ldflags '-w -linkmode external -extldflags "-static"' -o main .
 
 
 # copy executable file and certs to a pure container
-FROM debian:bullseye
+FROM debian:bookworm
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates haveged \
