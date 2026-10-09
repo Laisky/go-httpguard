@@ -13,7 +13,7 @@ RUN go mod download
 
 # static build
 ADD . .
-RUN go build -a -ldflags '-w -extldflags "-static"' -o main ./cmd/gohttpguard
+RUN go build -a -ldflags '-w -linkmode external -extldflags "-static"' -o main ./cmd/gohttpguard
 
 
 # copy executable file and certs to a pure container

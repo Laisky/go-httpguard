@@ -25,3 +25,6 @@ must upgrade their toolchain before adopting this version. The floor follows
 which selects the fixed crypto and text dependency versions. Security metadata
 covers the dependency graph and does not establish that every advisory is
 reachable through this application.
+
+The Docker builder explicitly uses external static linking so its patched
+Bookworm compiler remains compatible with the retained Bullseye runtime.
