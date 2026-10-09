@@ -1,4 +1,4 @@
-FROM golang:1.17.8-bullseye AS gobuild
+FROM golang:1.26.9-bookworm AS gobuild
 
 # install dependencies
 RUN apt-get update \
