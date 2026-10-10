@@ -1,4 +1,4 @@
-FROM golang:1.17.8-bullseye AS gobuild
+FROM golang:1.26.9-bookworm AS gobuild
 
 # install dependencies
 RUN apt-get update \
@@ -13,11 +13,11 @@ RUN go mod download
 
 # static build
 ADD . .
-RUN go build -a -ldflags '-w -extldflags "-static"' -o main ./cmd/gohttpguard
+RUN go build -a -ldflags '-w -linkmode external -extldflags "-static"' -o main ./cmd/gohttpguard
 
 
 # copy executable file and certs to a pure container
-FROM debian:bullseye
+FROM debian:bookworm
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates haveged \
